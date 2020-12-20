@@ -11,3 +11,11 @@ export const setSelectedIndex = data => {
     payload: data
   };
 };
+
+export const setPageNumber = data => {
+  return {
+    type: "SET_PAGE_NUMBER",
+    payload: data
+  };
+};
+

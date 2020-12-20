@@ -11,14 +11,10 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import CardActions from "@material-ui/core/CardActions";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
-import { red } from "@material-ui/core/colors";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Button from "@material-ui/core/Button";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Skeleton from "@material-ui/lab/Skeleton";
 import Rating from "@material-ui/lab/Rating";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory } from 'react-router-dom';
 
@@ -57,9 +53,6 @@ const useStyles = makeStyles(theme => ({
   expandOpen: {
     transform: "rotate(180deg)"
   },
-  avatar: {
-    backgroundColor: red[500]
-  },
   Rating: {
     display: "flex",
     flexDirection: "row",
@@ -70,25 +63,20 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Home = (props) => {
+    const itemsPerPage = 8;
+
     const classes = useStyles();
     const dispatch = useDispatch();
+    const history = useHistory();
+
     const [expanded, setExpanded] = React.useState(false);
     const [loading, setLoading] = React.useState(true);
-    const projectsList = useSelector(state => state.data);
-    const itemsPerPage = 8;
-    const [page, setPage] = React.useState(1);
     const [noOfPages] = React.useState(
         Math.ceil(60 / itemsPerPage)
     );
 
-    const history = useHistory();
-    const handleClose = React.useCallback((id) => {
-        console.log("Index = " + id);
-        // dispatch(actions.setSelectedIndex(index));
-      history.push("/productdetails");
-    }, [history]);
-
-    console.log("projectsList = " + projectsList);
+    const projectsList = useSelector(state => state.data);
+    const page = useSelector(state => state.pageNumber);
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
@@ -96,14 +84,9 @@ const Home = (props) => {
 
     React.useEffect(() => {
         const url =
-            "https://mobile-tha-server-8ba57.firebaseapp.com/walmartproducts/1/8";
+            `https://mobile-tha-server-8ba57.firebaseapp.com/walmartproducts/${page}/8`;
         getData(url).then(
             response => {
-                console.log(response);
-                const mappedArray = response.data.products.map(item =>{
-                    return { ...item, expanded: false };
-                });
-                console.log("mappedArray = " + mappedArray);
                 dispatch(actions.setData(response.data.products));
                 setLoading(false);
             },
@@ -114,12 +97,11 @@ const Home = (props) => {
     }, []);
 
     const handleChange = (event, value) => {
-        setPage(value);
+      dispatch(actions.setPageNumber(value));
         const url =
-            "https://mobile-tha-server-8ba57.firebaseapp.com/walmartproducts/" + `${value}` + "/8";
+            `https://mobile-tha-server-8ba57.firebaseapp.com/walmartproducts/${value}/8`;
         getData(url).then(
             response => {
-                console.log(response.data.products);
                 dispatch(actions.setData(response.data.products));
                 setLoading(false);
             },
@@ -134,9 +116,7 @@ const Home = (props) => {
         <div>
             <List dense compoent="span">
                 {projectsList
-                    /* .slice((page - 1) * itemsPerPage, page * itemsPerPage) */
                     .map((projectItem, index) => {
-                        // const labelId = `list-secondary-label-${projectItem.projectName}`;
                         return (
                           <ListItem key={index}>
                             <Card className={classes.root}>
@@ -188,7 +168,6 @@ const Home = (props) => {
                                 }
                               />
                               <CardActionArea
-                                // onClick={handleClose(projectItem.productId)}
                                 onClick={() => { dispatch(actions.setSelectedIndex(projectItem)); history.push("/productdetails") }}
                               >
                                 {loading ? (
